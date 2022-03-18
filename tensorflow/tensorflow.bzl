@@ -331,6 +331,17 @@ def lrt_if_needed():
         "//conditions:default": [],
     })
 
+# Linux systems may required -lexecinfo linker flag for e.g. with
+# musl-based OS
+def lexecinfo_if_needed():
+    lib = ["-lexecinfo"]
+    return select({
+        clean_dep("//tensorflow:linux_aarch64"): lib,
+        clean_dep("//tensorflow:linux_x86_64"): lib,
+        clean_dep("//tensorflow:linux_ppc64le"): lib,
+        "//conditions:default": lib,
+    })
+
 def get_win_copts(is_external = False):
     WINDOWS_COPTS = [
         "/DPLATFORM_WINDOWS",
@@ -660,7 +671,7 @@ def tf_cc_shared_object(
         srcs = [],
         deps = [],
         data = [],
-        linkopts = lrt_if_needed(),
+        linkopts = lrt_if_needed() + lexecinfo_if_needed(),
         framework_so = tf_binary_additional_srcs(),
         soversion = None,
         kernels = [],
@@ -761,7 +772,7 @@ def tf_cc_shared_library(
         deps = [],
         data = [],
         copts = [],
-        linkopts = lrt_if_needed(),
+        linkopts = lrt_if_needed() + lexecinfo_if_needed(),
         additional_linker_inputs = [],
         linkstatic = True,
         framework_so = tf_binary_additional_srcs(),
@@ -890,7 +901,7 @@ def tf_cc_binary(
         srcs = [],
         deps = [],
         data = [],
-        linkopts = lrt_if_needed(),
+        linkopts = lrt_if_needed() + lexecinfo_if_needed(),
         copts = tf_copts(),
         kernels = [],
         per_os_targets = False,  # Generate targets with SHARED_LIBRARY_NAME_PATTERNS
@@ -963,7 +974,7 @@ def tf_native_cc_binary(
                 "-lpthread",
                 "-lm",
             ],
-        }) + linkopts + _rpath_linkopts(name) + lrt_if_needed(),
+        }) + linkopts + _rpath_linkopts(name) + lrt_if_needed() + lexecinfo_if_needed(),
         **kwargs
     )
 
@@ -1003,7 +1014,7 @@ def tf_native_cc_shared_library(
                 "-lpthread",
                 "-lm",
             ],
-        }) + linkopts + _rpath_user_link_flags(name) + lrt_if_needed(),
+        }) + linkopts + _rpath_user_link_flags(name) + lrt_if_needed() + lexecinfo_if_needed(),
         visibility = visibility,
     )
     native.alias(
@@ -1029,7 +1040,7 @@ def tf_gen_op_wrapper_cc(
     tf_cc_binary(
         name = tool,
         copts = tf_copts(),
-        linkopts = if_not_windows(["-lm", "-Wl,-ldl"]) + lrt_if_needed(),
+        linkopts = if_not_windows(["-lm", "-Wl,-ldl"]) + lrt_if_needed() + lexecinfo_if_needed(),
         linkstatic = 1,  # Faster to link this one-time-use binary dynamically
         deps = [op_gen] + deps,
     )
@@ -1209,7 +1220,7 @@ def tf_gen_op_wrapper_py(
         generated_target_name = None,
         op_whitelist = [],
         op_allowlist = [],
-        cc_linkopts = lrt_if_needed(),
+        cc_linkopts = lrt_if_needed() + lexecinfo_if_needed(),
         api_def_srcs = [],
         compatible_with = [],
         testonly = False):
@@ -1334,7 +1345,7 @@ def tf_cc_test(
         linkstatic = 0,
         extra_copts = [],
         suffix = "",
-        linkopts = lrt_if_needed(),
+        linkopts = lrt_if_needed() + lexecinfo_if_needed(),
         kernels = [],
         **kwargs):
     cc_test(
@@ -1511,7 +1522,7 @@ def tf_cc_tests(
         tags = [],
         size = "medium",
         args = None,
-        linkopts = lrt_if_needed(),
+        linkopts = lrt_if_needed() + lexecinfo_if_needed(),
         kernels = [],
         create_named_test_suite = False,
         visibility = None):

@@ -1,0 +1,67 @@
+diff --git a/utils/bazel/llvm-project-overlay/llvm/BUILD.bazel b/utils/bazel/llvm-project-overlay/llvm/BUILD.bazel
+index 7c31359fb..c954ecf44 100644
+--- a/utils/bazel/llvm-project-overlay/llvm/BUILD.bazel
++++ b/utils/bazel/llvm-project-overlay/llvm/BUILD.bazel
+@@ -204,6 +204,7 @@ cc_library(
+         "include/llvm/Support/VCSRevision.h",
+     ],
+     copts = llvm_copts,
++    defines  = llvm_config_defines,
+     includes = ["include"],
+     linkopts = select({
+         "@bazel_tools//src/conditions:windows": [],
+@@ -215,6 +215,7 @@ cc_library(
+         ],
+         "//conditions:default": [
+             "-pthread",
++            "-lexecinfo",
+             "-ldl",
+             "-lm",
+         ],
+diff --git a/utils/bazel/llvm-project-overlay/llvm/config.bzl b/utils/bazel/llvm-project-overlay/llvm/config.bzl
+index 2046b2645..3f4272cdc 100644
+--- a/utils/bazel/llvm-project-overlay/llvm/config.bzl
++++ b/utils/bazel/llvm-project-overlay/llvm/config.bzl
+@@ -27,10 +27,10 @@ posix_defines = [
+     "LLVM_ENABLE_THREADS=1",
+     "HAVE_DEREGISTER_FRAME=1",
+     "HAVE_LIBPTHREAD=1",
+-    "HAVE_PTHREAD_GETNAME_NP=1",
++#   "HAVE_PTHREAD_GETNAME_NP=0",
+     "HAVE_PTHREAD_GETSPECIFIC=1",
+     "HAVE_PTHREAD_H=1",
+-    "HAVE_PTHREAD_SETNAME_NP=1",
++#   "HAVE_PTHREAD_SETNAME_NP=0",
+     "HAVE_REGISTER_FRAME=1",
+     "HAVE_SETENV_R=1",
+     "HAVE_STRERROR_R=1",
+@@ -42,7 +42,7 @@ linux_defines = posix_defines + [
+     "_GNU_SOURCE",
+     "HAVE_LINK_H=1",
+     "HAVE_LSEEK64=1",
+-    "HAVE_MALLINFO=1",
++#   "HAVE_MALLINFO=0",
+     "HAVE_SBRK=1",
+     "HAVE_STRUCT_STAT_ST_MTIM_TV_NSEC=1",
+ ]
+diff --git a/utils/bazel/llvm-project-overlay/llvm/include/llvm/Config/config.h b/utils/bazel/llvm-project-overlay/llvm/include/llvm/Config/config.h
+index 404501139..41c075a54 100644
+--- a/utils/bazel/llvm-project-overlay/llvm/include/llvm/Config/config.h
++++ b/utils/bazel/llvm-project-overlay/llvm/include/llvm/Config/config.h
+@@ -136,13 +136,13 @@
+ /* #undef HAVE_LIBPSAPI */
+ 
+ /* Define to 1 if you have the `pthread' library (-lpthread). */
+-#define HAVE_LIBPTHREAD 1
++/* HAVE_LIBPTHREAD defined in Bazel */
+ 
+ /* Define to 1 if you have the `pthread_getname_np' function. */
+-#define HAVE_PTHREAD_GETNAME_NP 1
++/* HAVE_PTHREAD_GETNAME_NP defined in Bazel */
+ 
+ /* Define to 1 if you have the `pthread_setname_np' function. */
+-#define HAVE_PTHREAD_SETNAME_NP 1
++/* HAVE_PTHREAD_SETNAME_NP defined in Bazel */
+ 
+ /* Define to 1 if you have the <link.h> header file. */
+ /* HAVE_LINK_H defined in Bazel */
